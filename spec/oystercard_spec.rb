@@ -1,8 +1,8 @@
 require 'oystercard'
 
 RSpec.describe Oystercard do
-  let(:subject) {described_class.new(10)}
-
+  let(:subject) { described_class.new(10) }
+  let(:entry_station) { double(:entry_station) }
   describe "#initialize" do
     it 'checks that the Oystercard class exists' do
       expect(subject.respond_to?(:oystercard))
@@ -42,23 +42,34 @@ RSpec.describe Oystercard do
 
   describe "#touch_in" do
     it 'it changes the oystercard status to on a journey (@on_a_journey = true)' do
-      expect(subject.touch_in).to eq true
+      subject.touch_in(entry_station)
+      expect(subject.in_journey?).to eq true
+    end
+
+    it 'sets the entry station on touch in' do
+      subject.touch_in(entry_station)
+      expect(subject.entry_station).to eq entry_station
     end
 
     it 'throws an error if a card with unsufficient balance is touched in' do
       subject = Oystercard.new(0)
-      expect{subject.touch_in}.to raise_error("Insufficient card balance")
+      expect{subject.touch_in(entry_station)}.to raise_error("Insufficient card balance")
     end
   end
 
   describe "#touch_out" do
     it 'it changes the oystercard status to not on a journey (@on_a_journey = false)' do
-      subject.touch_in
+      subject.touch_in(entry_station)
       expect{ subject.touch_out }.to change { subject.in_journey? }.to false
     end
 
     it 'it charges the oystercard the minimum fare when we touch out' do
       expect{subject.touch_out}.to change{subject.balance}.by (-1)
+    end
+
+    it 'resets entry station to nil on touch out' do
+      subject.touch_in(entry_station)
+      expect{ subject.touch_out }.to change { subject.entry_station }.to nil
     end
   end
 end
