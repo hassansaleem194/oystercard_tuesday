@@ -3,6 +3,7 @@ require 'oystercard'
 RSpec.describe Oystercard do
   let(:subject) { described_class.new(10) }
   let(:entry_station) { double(:entry_station) }
+  let(:exit_station) { double(:exit_station) }
   describe "#initialize" do
     it 'checks that the Oystercard class exists' do
       expect(subject.respond_to?(:oystercard))
@@ -14,6 +15,13 @@ RSpec.describe Oystercard do
       expect(subject.balance).to eq 10
     end
   end
+
+  describe "#journey_history" do
+    it 'checks that a new journey history array is made' do
+      expect(subject.journey_history).to eq([])
+    end
+  end
+  
 
   describe "#top_up" do
     it 'should add money to the balance, and take in the amount as an argument' do
@@ -60,16 +68,24 @@ RSpec.describe Oystercard do
   describe "#touch_out" do
     it 'it changes the oystercard status to not on a journey (@on_a_journey = false)' do
       subject.touch_in(entry_station)
-      expect{ subject.touch_out }.to change { subject.in_journey? }.to false
+      expect{ subject.touch_out(exit_station) }.to change { subject.in_journey? }.to false
     end
 
     it 'it charges the oystercard the minimum fare when we touch out' do
-      expect{subject.touch_out}.to change{subject.balance}.by (-1)
+      expect{subject.touch_out(exit_station)}.to change{subject.balance}.by (-1)
     end
 
     it 'resets entry station to nil on touch out' do
       subject.touch_in(entry_station)
-      expect{ subject.touch_out }.to change { subject.entry_station }.to nil
+      expect{ subject.touch_out(exit_station) }.to change { subject.entry_station }.to nil
+    end
+
+    it 'adds a complete journey to the journey_history array' do
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expected = {:entry => entry_station, :exit => exit_station}
+      expect(subject.journey_history).to include expected
     end
   end
+
 end
