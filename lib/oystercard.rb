@@ -5,7 +5,6 @@ class Oystercard
   def initialize(starting_balance)
     @balance = starting_balance
     @maximum_limit = MAXIMUM_LIMIT
-    # @maximum_limit = TFL_prices::TFL_MINIMUM_FARE
     @minimum_fare = MINIMUM_FARE
     @on_a_journey = false
   end
@@ -13,15 +12,11 @@ class Oystercard
   attr_reader :balance
 
   def top_up(amount)
-    new_balance = (@balance + amount)
-
-    if  new_balance <= @maximum_limit
-      @balance = new_balance
-      return  @balance
+    if under_maximum_limit?(amount)
+      @balance += amount
     else
-      p "Maximum limit of #{@maximum_limit} reached"
+      "Maximum limit of #{@maximum_limit} reached"
     end   
-
   end
 
   def in_journey?
@@ -34,8 +29,8 @@ class Oystercard
   end
 
   def touch_out
-    @on_a_journey = false
     #touch out, then deduct the fare from @balance
+    @on_a_journey = false
     deduct(@minimum_fare)
   end
 
@@ -44,6 +39,10 @@ class Oystercard
   def deduct(fare)
     new_balance = (@balance - fare)
     @balance = new_balance
+  end
+
+  def under_maximum_limit?(amount)
+    @balance + amount <= @maximum_limit
   end
 
 end
