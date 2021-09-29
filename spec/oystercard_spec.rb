@@ -71,8 +71,15 @@ RSpec.describe Oystercard do
 
   describe "#touch_out" do
     it 'it changes the oystercard status to not on a journey (@on_a_journey = false)' do
-      expect(@my_oystercard_b.touch_out).to eq false
+      @my_oystercard_b.touch_out
+      expect(@my_oystercard_b.in_journey?).to eq false
+    end
+
+    it 'it charges the oystercard the minimum fare when we touch out' do
+      expect{@my_oystercard_a.touch_out}.to change{@my_oystercard_a.balance}.by (-1)
     end
   end
+
+
 
 end
